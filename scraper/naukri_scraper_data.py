@@ -1,0 +1,1084 @@
+import csv
+import os
+import time
+import random
+import pandas as pd
+
+from pathlib import Path
+from playwright.sync_api import sync_playwright
+
+
+
+# CONFIGURATION
+
+
+INPUT_CSV = Path("scraped_data/naukri.com_data/naukri_jobs_link.csv")
+
+OUTPUT_CSV = Path("scraped_data/naukri.com_data/naukri_jobs_raw.csv")
+
+
+FIELDS = [
+    "job_title",
+    "company",
+    "location",
+    "experience",
+    "salary",
+    "job_description",
+    "key_skills",
+    "employment_type",
+    "education",
+    "industry",
+    "department",
+    "role",
+    "posted",
+    "rating",
+    "reviews",
+    "job_url"
+]
+
+
+
+
+
+
+# SAFE TEXT EXTRACTION
+
+
+def get_text(page, selectors):
+
+    for selector in selectors:
+
+        try:
+
+            locator = page.locator(
+                selector
+            ).first
+
+            if locator.count() > 0:
+
+                text = locator.inner_text(
+                    timeout=3000
+                ).strip()
+
+                if text:
+
+                    return text
+
+        except Exception:
+
+            continue
+
+    return ""
+
+
+# ============================================================
+# JOB TITLE
+# ============================================================
+
+def get_job_title(page):
+
+    return get_text(
+        page,
+        [
+            "h1.styles_jd-header-title__rZwM1",
+            "h1.jd-header-title",
+            "h1"
+        ]
+    )
+
+
+# ============================================================
+# COMPANY
+# ============================================================
+
+def get_company(page):
+
+    return get_text(
+        page,
+        [
+            "div.styles_jd-header-comp-name__MvqAI a",
+            "a.styles_jd-header-comp-name__LAp7I",
+            "a.comp-name",
+            ".comp-name"
+        ]
+    )
+
+
+# ============================================================
+# LOCATION
+# ============================================================
+
+def get_location(page):
+
+    return get_text(
+        page,
+        [
+            "span.styles_jhc__location__W_pVs",
+            "div.styles_jhc__location__W_pVs",
+            ".location"
+        ]
+    )
+
+
+# ============================================================
+# EXPERIENCE
+# ============================================================
+
+def get_experience(page):
+
+    return get_text(
+        page,
+        [
+            "div.styles_jhc__exp__k_giM span",
+            "div.styles_jhc__exp__k_giM"
+        ]
+    )
+
+
+# ============================================================
+# SALARY
+# ============================================================
+
+def get_salary(page):
+
+    return get_text(
+        page,
+        [
+            "div.styles_jhc__salary__jdfEC span",
+            "div.styles_jhc__salary__jdfEC"
+        ]
+    )
+
+
+# ============================================================
+# POSTED
+# ============================================================
+
+def get_posted(page):
+
+    try:
+
+        stats = page.locator(
+            "span.styles_jhc__stat__PgY67"
+        )
+
+        count = stats.count()
+
+        for i in range(count):
+
+            stat = stats.nth(i)
+
+            label = stat.locator(
+                "label"
+            ).inner_text().strip()
+
+            if label.startswith("Posted"):
+
+                value = stat.locator(
+                    "span"
+                ).last.inner_text().strip()
+
+                return value
+
+    except Exception as e:
+
+        print(
+            f"Posted extraction error: {e}"
+        )
+
+    return ""
+
+
+# ============================================================
+# OPENINGS
+# ============================================================
+
+def get_openings(page):
+
+    try:
+
+        stats = page.locator(
+            "span.styles_jhc__stat__PgY67"
+        )
+
+        for i in range(stats.count()):
+
+            stat = stats.nth(i)
+
+            label = stat.locator(
+                "label"
+            ).inner_text().strip()
+
+            if label.startswith("Openings"):
+
+                return stat.locator(
+                    "span"
+                ).last.inner_text().strip()
+
+    except Exception:
+
+        pass
+
+    return ""
+
+
+# ============================================================
+# APPLICANTS
+# ============================================================
+
+def get_applicants(page):
+
+    try:
+
+        stats = page.locator(
+            "span.styles_jhc__stat__PgY67"
+        )
+
+        for i in range(stats.count()):
+
+            stat = stats.nth(i)
+
+            label = stat.locator(
+                "label"
+            ).inner_text().strip()
+
+            if label.startswith("Applicants"):
+
+                return stat.locator(
+                    "span"
+                ).last.inner_text().strip()
+
+    except Exception:
+
+        pass
+
+    return ""
+
+
+# ============================================================
+# JOB DESCRIPTION
+# ============================================================
+
+def get_job_description(page):
+
+    selectors = [
+        "div.styles_JDC__dang-inner-html__h0K4t",
+        "div.styles_job-desc-container__txpyr",
+        "div.job-desc",
+        "section.job-desc"
+    ]
+
+    for selector in selectors:
+
+        try:
+
+            locator = page.locator(
+                selector
+            ).first
+
+            if locator.count() > 0:
+
+                text = locator.inner_text(
+                    timeout=5000
+                ).strip()
+
+                if text:
+
+                    return text
+
+        except Exception:
+
+            continue
+
+    return ""
+
+
+# ============================================================
+# KEY SKILLS
+# ============================================================
+
+def get_key_skills(page):
+
+    selectors = [
+        "div.styles_key-skill__GIPn_ a",
+        "div.styles_key-skill__GIPn_ span",
+        ".styles_key-skill__GIPn_ a",
+        ".styles_key-skill__GIPn_ span",
+        ".key-skill a",
+        ".key-skill span"
+    ]
+
+    skills = []
+
+    for selector in selectors:
+
+        try:
+
+            elements = page.locator(
+                selector
+            )
+
+            count = elements.count()
+
+            for i in range(count):
+
+                text = elements.nth(
+                    i
+                ).inner_text().strip()
+
+                if text and text not in skills:
+
+                    skills.append(text)
+
+            if skills:
+
+                break
+
+        except Exception:
+
+            continue
+
+    return ", ".join(skills)
+
+
+# ============================================================
+# RATING + REVIEWS
+# ============================================================
+
+def get_rating_reviews(page):
+
+    rating = ""
+    reviews = ""
+
+    try:
+
+        rating = page.locator(
+            "span.styles_amb-rating__4UyFL"
+        ).first.inner_text(
+            timeout=3000
+        ).strip()
+
+    except Exception:
+
+        pass
+
+
+    try:
+
+        reviews = page.locator(
+            "span.styles_amb-reviews__0J1e3"
+        ).first.inner_text(
+            timeout=3000
+        ).strip()
+
+    except Exception:
+
+        pass
+
+
+    return rating, reviews
+
+
+# ============================================================
+# GENERIC DETAIL EXTRACTION
+# ============================================================
+
+# def get_detail_by_label(page, label):
+
+    try:
+
+        # Find the exact label
+        label_locator = page.get_by_text(
+            label,
+            exact=True
+        ).first
+
+        if label_locator.count() == 0:
+
+            return ""
+
+
+        # Try parent
+        parent = label_locator.locator(
+            ".."
+        )
+
+        text = parent.inner_text(
+            timeout=3000
+        ).strip()
+
+
+        lines = [
+            line.strip()
+            for line in text.split("\n")
+            if line.strip()
+        ]
+
+
+        # Example:
+        #
+        # Education
+        # Any Graduate
+        #
+        if len(lines) >= 2:
+
+            return lines[-1]
+
+
+    except Exception:
+
+        pass
+
+    return ""
+
+
+# ============================================================
+# GET ALL JOB DETAILS
+# ============================================================
+
+# def get_other_details(page):
+
+    details = {
+
+        "employment_type": "",
+        "education": "",
+        "industry": "",
+        "department": "",
+        "role": ""
+
+    }
+
+
+    # --------------------------------------------------------
+    # Employment Type
+    # --------------------------------------------------------
+
+    details["employment_type"] = get_detail_by_label(
+        page,
+        "Employment Type"
+    )
+
+
+    # --------------------------------------------------------
+    # Education
+    # --------------------------------------------------------
+
+    details["education"] = get_detail_by_label(
+        page,
+        "Education"
+    )
+
+
+    # --------------------------------------------------------
+    # Industry
+    # --------------------------------------------------------
+
+    details["industry"] = get_detail_by_label(
+        page,
+        "Industry"
+    )
+
+
+    # --------------------------------------------------------
+    # Department
+    # --------------------------------------------------------
+
+    details["department"] = get_detail_by_label(
+        page,
+        "Department"
+    )
+
+
+    # --------------------------------------------------------
+    # Role
+    # --------------------------------------------------------
+
+    details["role"] = get_detail_by_label(
+        page,
+        "Role"
+    )
+
+
+    return details
+
+
+# ============================================================
+# SCRAPE ONE JOB
+# ============================================================
+
+def scrape_job(page, job_url):
+
+    data = {
+        field: ""
+        for field in FIELDS
+    }
+
+
+    # Always save URL
+    data["job_url"] = job_url
+
+
+    try:
+
+        print("\n")
+        print("=" * 90)
+
+        print(
+            f"Opening job URL:\n{job_url}"
+        )
+
+        print("=" * 90)
+
+
+        # ----------------------------------------------------
+        # OPEN PAGE
+        # ----------------------------------------------------
+
+        page.goto(
+            job_url,
+            wait_until="domcontentloaded",
+            timeout=30000
+        )
+
+
+        # Wait for page to settle
+        time.sleep(
+            random.uniform(2, 4)
+        )
+
+
+        # ----------------------------------------------------
+        # JOB TITLE
+        # ----------------------------------------------------
+
+        data["job_title"] = get_job_title(
+            page
+        )
+
+
+        # ----------------------------------------------------
+        # COMPANY
+        # ----------------------------------------------------
+
+        data["company"] = get_company(
+            page
+        )
+
+
+        # ----------------------------------------------------
+        # LOCATION
+        # ----------------------------------------------------
+
+        data["location"] = get_location(
+            page
+        )
+
+
+        # ----------------------------------------------------
+        # EXPERIENCE
+        # ----------------------------------------------------
+
+        data["experience"] = get_experience(
+            page
+        )
+
+
+        # ----------------------------------------------------
+        # SALARY
+        # ----------------------------------------------------
+
+        data["salary"] = get_salary(
+            page
+        )
+
+
+        # ----------------------------------------------------
+        # POSTED
+        # ----------------------------------------------------
+
+        data["posted"] = get_posted(
+            page
+        )
+
+
+        # ----------------------------------------------------
+        # JOB DESCRIPTION
+        # ----------------------------------------------------
+
+        data["job_description"] = get_job_description(
+            page
+        )
+
+
+        # ----------------------------------------------------
+        # KEY SKILLS
+        # ----------------------------------------------------
+
+        data["key_skills"] = get_key_skills(
+            page
+        )
+
+
+        # ----------------------------------------------------
+        # RATING + REVIEWS
+        # ----------------------------------------------------
+
+        (
+            data["rating"],
+            data["reviews"]
+        ) = get_rating_reviews(
+            page
+        )
+
+
+        # ----------------------------------------------------
+        # OTHER DETAILS
+        # ----------------------------------------------------
+
+        # details = get_other_details(
+        #     page
+        # )
+
+
+        # data.update(
+        #     details
+        # )
+
+
+        # ====================================================
+        # PRINT SCRAPED DATA
+        # ====================================================
+
+        print("\nSCRAPED DATA")
+        print("-" * 50)
+
+        print(
+            "Job Title      :",
+            data["job_title"]
+        )
+
+        print(
+            "Company        :",
+            data["company"]
+        )
+
+        print(
+            "Location       :",
+            data["location"]
+        )
+
+        print(
+            "Experience     :",
+            data["experience"]
+        )
+
+        print(
+            "Salary         :",
+            data["salary"]
+        )
+
+        print(
+            "Posted         :",
+            data["posted"]
+        )
+
+        print(
+            "Key Skills     :",
+            data["key_skills"]
+        )
+
+        print(
+            "Employment     :",
+            data["employment_type"]
+        )
+
+        print(
+            "Education      :",
+            data["education"]
+        )
+
+        print(
+            "Industry       :",
+            data["industry"]
+        )
+
+        print(
+            "Department     :",
+            data["department"]
+        )
+
+        print(
+            "Role           :",
+            data["role"]
+        )
+
+        print(
+            "Rating         :",
+            data["rating"]
+        )
+
+        print(
+            "Reviews        :",
+            data["reviews"]
+        )
+
+        print(
+            "Description    :",
+            len(data["job_description"]),
+            "characters"
+        )
+
+        print("-" * 50)
+
+
+        return data
+
+
+    except Exception as e:
+
+        print(
+            f"ERROR scraping:\n{job_url}"
+        )
+
+        print(
+            f"Error: {e}"
+        )
+
+        return data
+
+
+# ============================================================
+# SAVE DATA TO CSV
+# ============================================================
+
+def save_to_csv(data):
+
+    file_exists = OUTPUT_CSV.exists()
+
+
+    with open(
+        OUTPUT_CSV,
+        "a",
+        newline="",
+        encoding="utf-8-sig"
+    ) as file:
+
+        writer = csv.DictWriter(
+            file,
+            fieldnames=FIELDS
+        )
+
+
+        # Write header only for new file
+        if not file_exists:
+
+            writer.writeheader()
+
+
+        writer.writerow(
+            data
+        )
+
+
+# ============================================================
+# READ JOB URLS
+# ============================================================
+
+def get_job_urls():
+
+    print(
+        f"\nReading input file:\n{INPUT_CSV}"
+    )
+
+
+    if not INPUT_CSV.exists():
+
+        raise FileNotFoundError(
+            f"Input CSV not found: {INPUT_CSV}"
+        )
+
+
+    df = pd.read_csv(
+        INPUT_CSV
+    )
+
+
+    print(
+        "CSV columns:",
+        list(df.columns)
+    )
+
+
+    # --------------------------------------------------------
+    # Find URL column
+    # --------------------------------------------------------
+
+    possible_columns = [
+        "job_url",
+        "job_link",
+        "url",
+        "link"
+    ]
+
+
+    url_column = None
+
+
+    for column in possible_columns:
+
+        if column in df.columns:
+
+            url_column = column
+
+            break
+
+
+    if url_column is None:
+
+        raise ValueError(
+            "No job URL column found in CSV."
+        )
+
+
+    print(
+        "URL column:",
+        url_column
+    )
+
+
+    # --------------------------------------------------------
+    # Clean URLs
+    # --------------------------------------------------------
+
+    urls = (
+        df[url_column]
+        .dropna()
+        .astype(str)
+        .str.strip()
+    )
+
+
+    urls = urls[
+        urls != ""
+    ]
+
+
+    # Remove duplicates
+    urls = urls.unique().tolist()
+
+
+    return urls
+
+
+# ============================================================
+# GET ALREADY SCRAPED URLs
+# ============================================================
+
+def get_scraped_urls():
+
+    scraped_urls = set()
+
+
+    if not OUTPUT_CSV.exists():
+
+        return scraped_urls
+
+
+    try:
+
+        df = pd.read_csv(
+            OUTPUT_CSV
+        )
+
+
+        if "job_url" in df.columns:
+
+            scraped_urls = set(
+                df["job_url"]
+                .dropna()
+                .astype(str)
+                .str.strip()
+            )
+
+
+    except Exception as e:
+
+        print(
+            f"Could not read existing output: {e}"
+        )
+
+
+    return scraped_urls
+
+
+# ============================================================
+# MAIN
+# ============================================================
+
+def main():
+
+    # --------------------------------------------------------
+    # GET URLS
+    # --------------------------------------------------------
+
+    urls = get_job_urls()
+
+
+    print(
+        f"\nTotal unique job URLs: {len(urls)}"
+    )
+
+
+    # --------------------------------------------------------
+    # GET PREVIOUSLY SCRAPED URLS
+    # --------------------------------------------------------
+
+    scraped_urls = get_scraped_urls()
+
+
+    print(
+        f"Already scraped: {len(scraped_urls)}"
+    )
+
+
+    remaining = [
+        url
+        for url in urls
+        if url not in scraped_urls
+    ]
+
+
+    print(
+        f"Remaining jobs: {len(remaining)}"
+    )
+
+
+    if not remaining:
+
+        print(
+            "\nAll jobs have already been scraped."
+        )
+
+        return
+
+
+    # ========================================================
+    # PLAYWRIGHT
+    # ========================================================
+
+    with sync_playwright() as p:
+
+        print(
+            "\nStarting Chromium..."
+        )
+
+
+        browser = p.chromium.launch(
+            headless=False
+        )
+
+
+        context = browser.new_context(
+            viewport={
+                "width": 1366,
+                "height": 768
+            }
+        )
+
+
+        page = context.new_page()
+
+
+        # ----------------------------------------------------
+        # SCRAPE EACH JOB
+        # ----------------------------------------------------
+
+        for index, job_url in enumerate(
+            remaining,
+            start=1
+        ):
+
+            print(
+                f"\nJOB {index}/{len(remaining)}"
+            )
+
+
+            try:
+
+                data = scrape_job(
+                    page,
+                    job_url
+                )
+
+
+                # Save immediately
+                save_to_csv(
+                    data
+                )
+
+
+                scraped_urls.add(
+                    job_url
+                )
+
+
+                print(
+                    "\n✓ Saved to CSV"
+                )
+
+
+            except Exception as e:
+
+                print(
+                    f"\n✗ Failed: {e}"
+                )
+
+
+            # ------------------------------------------------
+            # Random delay
+            # ------------------------------------------------
+
+            delay = random.uniform(
+                3,
+                6
+            )
+
+
+            print(
+                f"Waiting {delay:.1f} seconds..."
+            )
+
+
+            time.sleep(
+                delay
+            )
+
+
+        # ----------------------------------------------------
+        # CLOSE
+        # ----------------------------------------------------
+
+        browser.close()
+
+
+    print("\n")
+    print("=" * 90)
+
+    print(
+        "SCRAPING COMPLETED"
+    )
+
+    print(
+        f"Output file: {OUTPUT_CSV}"
+    )
+
+    print("=" * 90)
+
+
+# ============================================================
+# RUN
+# ============================================================
+
+if __name__ == "__main__":
+
+    main()
