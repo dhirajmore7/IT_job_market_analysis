@@ -1,5 +1,7 @@
 from scraper.naukri.naukri_link_scraper import naukri_link_scraper
 
+from scraper.naukri.naukri_scraper_data import naukri_scraper_data
+
 from pathlib import Path
 import pandas as pd
 from datetime import date
@@ -12,7 +14,7 @@ naukri_link_data = Path("extracted_data/naukri_data/naukri_link_data.csv")
 history_data = Path("extracted_data/naukri_data/naukri_scrap_history.csv")
 
 
-def naukri_data_scraper():
+def naukri_job_link_scraper():
 
     print("Starting Naukri extraction...")
 
@@ -72,17 +74,17 @@ def naukri_data_scraper():
     print(df_1)
     print('histroy data SAVED !')
 
-
-   
-
-    
-
-
-
     print(f"Saved {len(df)} rows to {naukri_link_data}")
 
+    naukri_raw_data()
+
+
+output_csv = Path("extracted_data/naukri_data/naukri_raw_jobs.csv")
+def naukri_raw_data():
+    naukri_scraper_data(naukri_link_data,output_csv)
+    
     
 
 if __name__ == "__main__":
-    naukri_data_scraper()
+    naukri_job_link_scraper()
 

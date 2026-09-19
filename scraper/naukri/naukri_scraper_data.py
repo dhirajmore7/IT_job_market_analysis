@@ -12,9 +12,9 @@ from playwright.sync_api import sync_playwright
 # CONFIGURATION
 
 
-INPUT_CSV = Path("scraped_data/naukri.com_data/naukri_jobs_link.csv")
+# input_csv = Path("scraped_data/naukri.com_data/naukri_jobs_link.csv")
 
-OUTPUT_CSV = Path("scraped_data/naukri.com_data/naukri_jobs_raw.csv")
+# output_csv = Path("scraped_data/naukri.com_data/naukri_jobs_raw.csv")
 
 
 FIELDS = [
@@ -558,13 +558,13 @@ def scrape_job(page, job_url):
 # SAVE DATA TO CSV
                    
 
-def save_to_csv(data):
+def save_to_csv(data,output_csv):
 
-    file_exists = OUTPUT_CSV.exists()
+    file_exists = output_csv.exists()
 
 
     with open(
-        OUTPUT_CSV,
+        output_csv,
         "a",
         newline="",
         encoding="utf-8-sig"
@@ -591,22 +591,21 @@ def save_to_csv(data):
 # READ JOB URLS
                       
 
-def get_job_urls():
+def get_job_urls(input_csv):
 
     print(
-        f"\nReading input file:\n{INPUT_CSV}"
+        f"\nReading input file:\n{input_csv}"
     )
 
-
-    if not INPUT_CSV.exists():
+    if not input_csv.exists():
 
         raise FileNotFoundError(
-            f"Input CSV not found: {INPUT_CSV}"
+            f"Input CSV not found: {input_csv}"
         )
 
 
     df = pd.read_csv(
-        INPUT_CSV
+        input_csv
     )
 
 
@@ -681,12 +680,12 @@ def get_job_urls():
 # GET ALREADY SCRAPED URLs
                         
 
-def get_scraped_urls():
+def get_scraped_urls(output_csv):
 
     scraped_urls = set()
 
 
-    if not OUTPUT_CSV.exists():
+    if not output_csv.exists():
 
         return scraped_urls
 
@@ -694,7 +693,7 @@ def get_scraped_urls():
     try:
 
         df = pd.read_csv(
-            OUTPUT_CSV
+            output_csv
         )
 
 
@@ -722,16 +721,16 @@ def get_scraped_urls():
 # MAIN
                         
 
-def naukri_scraper_data():
+def naukri_scraper_data(input_csv,output_csv):
 
                                                     
     # GET URLS
                                                     
 
-    urls = get_job_urls()
+    urls = get_job_urls(input_csv)
 
 
-    print(
+    print( 
         f"\nTotal unique job URLs: {len(urls)}"
     )
 
@@ -740,7 +739,7 @@ def naukri_scraper_data():
     # GET PREVIOUSLY SCRAPED URLS
                                                     
 
-    scraped_urls = get_scraped_urls()
+    scraped_urls = get_scraped_urls(output_csv)
 
 
     print(
@@ -816,16 +815,13 @@ def naukri_scraper_data():
                     job_url
                 )
 
-
+                
                 # Save immediately
-                save_to_csv(
-                    data
-                )
+                
+                save_to_csv( data,output_csv)
 
 
-                scraped_urls.add(
-                    job_url
-                )
+                scraped_urls.add( job_url  )
 
 
                 print(
@@ -875,7 +871,7 @@ def naukri_scraper_data():
     )
 
     print(
-        f"Output file: {OUTPUT_CSV}"
+        f"Output file: {output_csv}"
     )
 
     print("=" * 90)
