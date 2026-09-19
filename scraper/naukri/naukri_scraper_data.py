@@ -722,7 +722,7 @@ def get_scraped_urls():
 # MAIN
                         
 
-def main():
+def naukri_scraper_data():
 
                                                     
     # GET URLS
@@ -882,9 +882,3 @@ def main():
 
 
                         
-# RUN
-                        
-
-if __name__ == "__main__":
-
-    main()

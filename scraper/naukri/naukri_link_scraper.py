@@ -15,7 +15,7 @@ naukri_job_link = Path( "scraped_data/naukri.com_data/naukri_jobs_link.csv")
 BASE_URL = "https://www.naukri.com/data-analyst-jobs"
 
 # Number of pages to scrape
-MAX_PAGES = 2
+MAX_PAGES = 1
 
 
 
@@ -26,269 +26,277 @@ MAX_PAGES = 2
 jobs = []
 
 
+def link_scraper():
 
 
+    with sync_playwright() as p:
 
-with sync_playwright() as p:
-
-    browser = p.chromium.launch(headless=False)
-        
-
-    context = browser.new_context(viewport={ "width": 1280,"height": 900 })
-        
-
-    page = context.new_page()
-
-
-    
-    # LOOP THROUGH PAGES
-    
-    for page_number in range(1, MAX_PAGES + 1):
-
-        
-        print("=" * 80)
-        print(f"SCRAPING PAGE {page_number}")
-        print("=" * 80)
-
-
-        
-        # CREATE PAGE URL
-        
-
-        if page_number == 1:
-
-            url = BASE_URL
-
-        else:
-
-            url = f"{BASE_URL}-{page_number}"
-
-
-        print("Opening:", url)
-                        
-                   
+        browser = p.chromium.launch(headless=False)
             
 
+        context = browser.new_context(viewport={ "width": 1280,"height": 900 })
+            
 
-        
-        # OPEN PAGE
-        
-
-        try:
-
-            page.goto(
-                url,
-                timeout=60000,
-                wait_until="domcontentloaded"
-            )
-
-        except Exception as e:
-
-            print(f"Page loading error: {e}")
-
-            continue
+        page = context.new_page()
 
 
         
-        # WAIT FOR PAGE
+        # LOOP THROUGH PAGES
         
+        for page_number in range(1, MAX_PAGES + 1):
 
-        page.wait_for_timeout(5000)
-
-
-        print("Page title:",page.title())
-
-
-        
-        # FIND JOB LINKS
-        
-
-        job_links = page.locator(
-            'a[href*="/job-listings-"]'
-        )
+            
+            print("=" * 80)
+            print(f"SCRAPING PAGE {page_number}")
+            print("=" * 80)
 
 
-        count = job_links.count()
+            
+            # CREATE PAGE URL
+            
+
+            if page_number == 1:
+
+                url = BASE_URL
+
+            else:
+
+                url = f"{BASE_URL}-{page_number}"
 
 
-        print(
-            f"Job links found on page {page_number}: {count}"
-        )
+            print("Opening:", url)
+                            
+                    
+                
 
 
-        
-        # IF NO JOBS FOUND
-        
-
-        if count == 0:
-
-            print(
-                f"No jobs found on page {page_number}."
-            )
-
-            print(
-                "Stopping pagination."
-            )
-
-            break
-
-
-        
-        # EXTRACT JOB LINKS
-        
-        page_jobs = 0
-
-
-        for i in range(count):
+            
+            # OPEN PAGE
+            
 
             try:
 
-                link = job_links.nth(i)
-
-
-                
-                # GET TITLE
-                
-
-                title = link.inner_text().strip()
-
-
-                
-                # GET URL
-                
-
-                url = link.get_attribute(
-                    "href"
+                page.goto(
+                    url,
+                    timeout=60000,
+                    wait_until="domcontentloaded"
                 )
-
-
-                
-                # VALIDATE
-                
-
-                if title and url:
-
-                    jobs.append(
-                        {
-                            "job_title": title,
-                            "job_url": url
-                        }
-                    )
-
-
-                    page_jobs += 1
-
-
-                    print(
-                        f"{i + 1}. {title}"
-                    )
-
-                    print(
-                        f"   {url}"
-                    )
-
 
             except Exception as e:
 
+                print(f"Page loading error: {e}")
+
+                continue
+
+
+            
+            # WAIT FOR PAGE
+            
+
+            page.wait_for_timeout(5000)
+
+
+            print("Page title:",page.title())
+
+
+            
+            # FIND JOB LINKS
+            
+
+            job_links = page.locator(
+                'a[href*="/job-listings-"]'
+            )
+
+
+            count = job_links.count()
+
+
+            print(
+                f"Job links found on page {page_number}: {count}"
+            )
+
+
+            
+            # IF NO JOBS FOUND
+            
+
+            if count == 0:
+
                 print(
-                    f"Error extracting job {i}: {e}"
+                    f"No jobs found on page {page_number}."
+                )
+
+                print(
+                    "Stopping pagination."
+                )
+
+                break
+
+
+            
+            # EXTRACT JOB LINKS
+            
+            page_jobs = 0
+
+
+            for i in range(count):
+
+                try:
+
+                    link = job_links.nth(i)
+
+
+                    
+                    # GET TITLE
+                    
+
+                    title = link.inner_text().strip()
+
+
+                    
+                    # GET URL
+                    
+
+                    url = link.get_attribute(
+                        "href"
+                    )
+
+
+                    
+                    # VALIDATE
+                    
+
+                    if title and url:
+
+                        jobs.append(
+                            {
+                                "job_title": title,
+                                "job_url": url
+                            }
+                        )
+
+
+                        page_jobs += 1
+
+
+                        print(
+                            f"{i + 1}. {title}"
+                        )
+
+                        print(
+                            f"   {url}"
+                        )
+
+
+                except Exception as e:
+
+                    print(
+                        f"Error extracting job {i}: {e}"
+                    )
+
+
+            print(
+                f"\nJobs collected from page {page_number}: {page_jobs}"
+            )
+
+
+            
+            # WAIT BEFORE NEXT PAGE
+            
+
+            if page_number < MAX_PAGES:
+
+                delay = random.uniform(
+                    3,
+                    5
+                )
+
+                print(
+                    f"Waiting {delay:.1f} seconds before next page..."
+                )
+
+                time.sleep(
+                    delay
                 )
 
 
-        print(
-            f"\nJobs collected from page {page_number}: {page_jobs}"
-        )
-
-
         
-        # WAIT BEFORE NEXT PAGE
+        # CLOSE BROWSER
         
 
-        if page_number < MAX_PAGES:
+        browser.close()
 
-            delay = random.uniform(
-                3,
-                5
-            )
 
-            print(
-                f"Waiting {delay:.1f} seconds before next page..."
-            )
+def naukri_link_scraper():
 
-            time.sleep(
-                delay
-            )
+
+    link_scraper()
 
 
     
-    # CLOSE BROWSER
-    
-
-    browser.close()
+    # CREATE DATAFRAME
 
 
-
-# CREATE DATAFRAME
-
-
-df = pd.DataFrame(
-    jobs
-)
-
-
-
-# REMOVE DUPLICATE URLs
-
-
-if not df.empty:
-
-    df = df.drop_duplicates(
-        subset=["job_url"]
+    df = pd.DataFrame(
+        jobs
     )
 
 
 
-# RESET INDEX
+    # REMOVE DUPLICATE URLs
 
 
-df = df.reset_index(
-    drop=True
-)
+    # if not df.empty:
 
-
-
-# SAVE CSV
-
-
-df.to_csv(
-    naukri_job_link,
-    index=False,
-    encoding="utf-8-sig"
-)
+    #     df = df.drop_duplicates(
+    #         subset=["job_url"]
+    #     )
 
 
 
-# FINAL RESULT
+    # # RESET INDEX
 
 
-print("\n")
-print("=" * 80)
-print("SCRAPING COMPLETED")
-print("=" * 80)
+    # df = df.reset_index(
+    #     drop=True
+    # )
 
 
-print(
-    f"Total unique jobs: {len(df)}"
-)
+
+    # # SAVE CSV
 
 
-print(
-    f"Saved to: {naukri_job_link}"
-)
+    # df.to_csv(
+    #     naukri_job_link,
+    #     index=False,
+    #     encoding="utf-8-sig"
+    # )
 
 
-print("\nFinal data:")
 
-print(
-    df
-)
+    # FINAL RESULT
+
+
+    print("\n")
+    print("=" * 80)
+    print("SCRAPING COMPLETED")
+    print("=" * 80)
+
+
+    print(
+        f"Total unique jobs: {len(df)}"
+    )
+
+
+    print(
+        f"Saved to: {naukri_job_link}"
+    )
+
+
+    print("\nFinal data:")
+
+    print(
+        df
+    )
+
+    return df
