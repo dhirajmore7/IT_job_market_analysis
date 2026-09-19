@@ -7,7 +7,7 @@ jobs_data = Path("scraped_data/linkedin_data/linkedin_jobs_raw_data.csv")
 
 jobs_link=Path("scraped_data/linkedin_data/linkedin_jobs_link.csv")
 
-session = Path("scraper/session/state.json")
+session = Path("scraper/linkedin/session/state.json")
 
 df = pd.read_csv(jobs_link)
 

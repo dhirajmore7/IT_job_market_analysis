@@ -6,7 +6,7 @@ import time
 
 import random
 
-session_path=Path("scraper/session/state.json")
+session_path=Path("scraper/linkedin/session/state.json")
 data_path = Path("scraped_data/linkedin_data/linkedin_jobs_link.csv")
 
 def scrape_page(page):

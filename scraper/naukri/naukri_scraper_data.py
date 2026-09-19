@@ -3,7 +3,7 @@ import os
 import time
 import random
 import pandas as pd
-
+from datetime import date
 from pathlib import Path
 from playwright.sync_api import sync_playwright
 
@@ -25,15 +25,11 @@ FIELDS = [
     "salary",
     "job_description",
     "key_skills",
-    "employment_type",
-    "education",
-    "industry",
-    "department",
-    "role",
     "posted",
     "rating",
     "reviews",
-    "job_url"
+    "job_url",
+    "scrape_date"
 ]
 
 
@@ -50,15 +46,11 @@ def get_text(page, selectors):
 
         try:
 
-            locator = page.locator(
-                selector
-            ).first
+            locator = page.locator(selector).first
 
             if locator.count() > 0:
 
-                text = locator.inner_text(
-                    timeout=3000
-                ).strip()
+                text = locator.inner_text(timeout=3000).strip()
 
                 if text:
 
@@ -71,14 +63,13 @@ def get_text(page, selectors):
     return ""
 
 
-# ============================================================
+ 
 # JOB TITLE
-# ============================================================
+ 
 
 def get_job_title(page):
 
-    return get_text(
-        page,
+    return get_text(page,
         [
             "h1.styles_jd-header-title__rZwM1",
             "h1.jd-header-title",
@@ -87,14 +78,13 @@ def get_job_title(page):
     )
 
 
-# ============================================================
+
 # COMPANY
-# ============================================================
+
 
 def get_company(page):
 
-    return get_text(
-        page,
+    return get_text(page,
         [
             "div.styles_jd-header-comp-name__MvqAI a",
             "a.styles_jd-header-comp-name__LAp7I",
@@ -104,14 +94,13 @@ def get_company(page):
     )
 
 
-# ============================================================
+
 # LOCATION
-# ============================================================
+
 
 def get_location(page):
 
-    return get_text(
-        page,
+    return get_text(page,
         [
             "span.styles_jhc__location__W_pVs",
             "div.styles_jhc__location__W_pVs",
@@ -120,14 +109,12 @@ def get_location(page):
     )
 
 
-# ============================================================
+
 # EXPERIENCE
-# ============================================================
 
 def get_experience(page):
 
-    return get_text(
-        page,
+    return get_text(page,
         [
             "div.styles_jhc__exp__k_giM span",
             "div.styles_jhc__exp__k_giM"
@@ -135,14 +122,13 @@ def get_experience(page):
     )
 
 
-# ============================================================
+
 # SALARY
-# ============================================================
+
 
 def get_salary(page):
 
-    return get_text(
-        page,
+    return get_text(page,
         [
             "div.styles_jhc__salary__jdfEC span",
             "div.styles_jhc__salary__jdfEC"
@@ -150,9 +136,9 @@ def get_salary(page):
     )
 
 
-# ============================================================
+
 # POSTED
-# ============================================================
+
 
 def get_posted(page):
 
@@ -189,9 +175,9 @@ def get_posted(page):
     return ""
 
 
-# ============================================================
+  
 # OPENINGS
-# ============================================================
+   
 
 def get_openings(page):
 
@@ -222,9 +208,9 @@ def get_openings(page):
     return ""
 
 
-# ============================================================
+    
 # APPLICANTS
-# ============================================================
+     
 
 def get_applicants(page):
 
@@ -255,9 +241,9 @@ def get_applicants(page):
     return ""
 
 
-# ============================================================
+      
 # JOB DESCRIPTION
-# ============================================================
+      
 
 def get_job_description(page):
 
@@ -293,9 +279,9 @@ def get_job_description(page):
     return ""
 
 
-# ============================================================
+       
 # KEY SKILLS
-# ============================================================
+        
 
 def get_key_skills(page):
 
@@ -341,9 +327,9 @@ def get_key_skills(page):
     return ", ".join(skills)
 
 
-# ============================================================
+         
 # RATING + REVIEWS
-# ============================================================
+          
 
 def get_rating_reviews(page):
 
@@ -379,142 +365,16 @@ def get_rating_reviews(page):
     return rating, reviews
 
 
-# ============================================================
-# GENERIC DETAIL EXTRACTION
-# ============================================================
-
-# def get_detail_by_label(page, label):
-
-    try:
-
-        # Find the exact label
-        label_locator = page.get_by_text(
-            label,
-            exact=True
-        ).first
-
-        if label_locator.count() == 0:
-
-            return ""
-
-
-        # Try parent
-        parent = label_locator.locator(
-            ".."
-        )
-
-        text = parent.inner_text(
-            timeout=3000
-        ).strip()
-
-
-        lines = [
-            line.strip()
-            for line in text.split("\n")
-            if line.strip()
-        ]
-
-
-        # Example:
-        #
-        # Education
-        # Any Graduate
-        #
-        if len(lines) >= 2:
-
-            return lines[-1]
-
-
-    except Exception:
-
-        pass
-
-    return ""
-
-
-# ============================================================
-# GET ALL JOB DETAILS
-# ============================================================
-
-# def get_other_details(page):
-
-    details = {
-
-        "employment_type": "",
-        "education": "",
-        "industry": "",
-        "department": "",
-        "role": ""
-
-    }
-
-
-    # --------------------------------------------------------
-    # Employment Type
-    # --------------------------------------------------------
-
-    details["employment_type"] = get_detail_by_label(
-        page,
-        "Employment Type"
-    )
-
-
-    # --------------------------------------------------------
-    # Education
-    # --------------------------------------------------------
-
-    details["education"] = get_detail_by_label(
-        page,
-        "Education"
-    )
-
-
-    # --------------------------------------------------------
-    # Industry
-    # --------------------------------------------------------
-
-    details["industry"] = get_detail_by_label(
-        page,
-        "Industry"
-    )
-
-
-    # --------------------------------------------------------
-    # Department
-    # --------------------------------------------------------
-
-    details["department"] = get_detail_by_label(
-        page,
-        "Department"
-    )
-
-
-    # --------------------------------------------------------
-    # Role
-    # --------------------------------------------------------
-
-    details["role"] = get_detail_by_label(
-        page,
-        "Role"
-    )
-
-
-    return details
-
-
-# ============================================================
 # SCRAPE ONE JOB
-# ============================================================
+                 
 
 def scrape_job(page, job_url):
 
-    data = {
-        field: ""
-        for field in FIELDS
-    }
+    data = {field: "" for field in FIELDS }
 
 
     # Always save URL
+
     data["job_url"] = job_url
 
 
@@ -523,16 +383,14 @@ def scrape_job(page, job_url):
         print("\n")
         print("=" * 90)
 
-        print(
-            f"Opening job URL:\n{job_url}"
-        )
+        print(f"Opening job URL:\n{job_url}")
 
         print("=" * 90)
 
 
-        # ----------------------------------------------------
+                                
         # OPEN PAGE
-        # ----------------------------------------------------
+                                
 
         page.goto(
             job_url,
@@ -547,108 +405,80 @@ def scrape_job(page, job_url):
         )
 
 
-        # ----------------------------------------------------
+                                
         # JOB TITLE
-        # ----------------------------------------------------
+                                
 
-        data["job_title"] = get_job_title(
-            page
-        )
+        data["job_title"] = get_job_title(page)
 
 
-        # ----------------------------------------------------
+                                
         # COMPANY
-        # ----------------------------------------------------
+                                
 
-        data["company"] = get_company(
-            page
-        )
+        data["company"] = get_company(page)
 
 
-        # ----------------------------------------------------
+                                
         # LOCATION
-        # ----------------------------------------------------
+                                
 
-        data["location"] = get_location(
-            page
-        )
+        data["location"] = get_location(page)
 
 
-        # ----------------------------------------------------
+                                
         # EXPERIENCE
-        # ----------------------------------------------------
+                                
 
-        data["experience"] = get_experience(
-            page
-        )
+        data["experience"] = get_experience(page)
 
 
-        # ----------------------------------------------------
+                                
         # SALARY
-        # ----------------------------------------------------
+                                
 
-        data["salary"] = get_salary(
-            page
-        )
+        data["salary"] = get_salary(page)
 
 
-        # ----------------------------------------------------
+                                
         # POSTED
-        # ----------------------------------------------------
+                                
 
-        data["posted"] = get_posted(
-            page
-        )
+        data["posted"] = get_posted( page )
 
 
-        # ----------------------------------------------------
+                                
         # JOB DESCRIPTION
-        # ----------------------------------------------------
+                                
 
-        data["job_description"] = get_job_description(
-            page
-        )
+        data["job_description"] = get_job_description( page)
 
 
-        # ----------------------------------------------------
+                                
         # KEY SKILLS
-        # ----------------------------------------------------
+                                
 
-        data["key_skills"] = get_key_skills(
-            page
-        )
+        data["key_skills"] = get_key_skills(page)
 
 
-        # ----------------------------------------------------
+                                
         # RATING + REVIEWS
-        # ----------------------------------------------------
+                                
 
-        (
-            data["rating"],
-            data["reviews"]
-        ) = get_rating_reviews(
-            page
-        )
+        (data["rating"],
+        data["reviews"]) = get_rating_reviews( page)
 
+        # SCRAPING DATE
 
-        # ----------------------------------------------------
-        # OTHER DETAILS
-        # ----------------------------------------------------
-
-        # details = get_other_details(
-        #     page
-        # )
+        data["scrape_date"] = date.today()
 
 
-        # data.update(
-        #     details
-        # )
+                                
+        
 
-
-        # ====================================================
+        
         # PRINT SCRAPED DATA
-        # ====================================================
-
+        
         print("\nSCRAPED DATA")
         print("-" * 50)
 
@@ -687,30 +517,7 @@ def scrape_job(page, job_url):
             data["key_skills"]
         )
 
-        print(
-            "Employment     :",
-            data["employment_type"]
-        )
-
-        print(
-            "Education      :",
-            data["education"]
-        )
-
-        print(
-            "Industry       :",
-            data["industry"]
-        )
-
-        print(
-            "Department     :",
-            data["department"]
-        )
-
-        print(
-            "Role           :",
-            data["role"]
-        )
+        
 
         print(
             "Rating         :",
@@ -747,9 +554,9 @@ def scrape_job(page, job_url):
         return data
 
 
-# ============================================================
+                  
 # SAVE DATA TO CSV
-# ============================================================
+                   
 
 def save_to_csv(data):
 
@@ -780,9 +587,9 @@ def save_to_csv(data):
         )
 
 
-# ============================================================
+                     
 # READ JOB URLS
-# ============================================================
+                      
 
 def get_job_urls():
 
@@ -809,9 +616,9 @@ def get_job_urls():
     )
 
 
-    # --------------------------------------------------------
+                                                    
     # Find URL column
-    # --------------------------------------------------------
+                                                    
 
     possible_columns = [
         "job_url",
@@ -846,9 +653,9 @@ def get_job_urls():
     )
 
 
-    # --------------------------------------------------------
+                                                    
     # Clean URLs
-    # --------------------------------------------------------
+                                                    
 
     urls = (
         df[url_column]
@@ -870,9 +677,9 @@ def get_job_urls():
     return urls
 
 
-# ============================================================
+                        
 # GET ALREADY SCRAPED URLs
-# ============================================================
+                        
 
 def get_scraped_urls():
 
@@ -911,15 +718,15 @@ def get_scraped_urls():
     return scraped_urls
 
 
-# ============================================================
+                        
 # MAIN
-# ============================================================
+                        
 
 def main():
 
-    # --------------------------------------------------------
+                                                    
     # GET URLS
-    # --------------------------------------------------------
+                                                    
 
     urls = get_job_urls()
 
@@ -929,9 +736,9 @@ def main():
     )
 
 
-    # --------------------------------------------------------
+                                                    
     # GET PREVIOUSLY SCRAPED URLS
-    # --------------------------------------------------------
+                                                    
 
     scraped_urls = get_scraped_urls()
 
@@ -962,10 +769,9 @@ def main():
         return
 
 
-    # ========================================================
+    
     # PLAYWRIGHT
-    # ========================================================
-
+    
     with sync_playwright() as p:
 
         print(
@@ -989,9 +795,9 @@ def main():
         page = context.new_page()
 
 
-        # ----------------------------------------------------
+                                
         # SCRAPE EACH JOB
-        # ----------------------------------------------------
+                                
 
         for index, job_url in enumerate(
             remaining,
@@ -1034,9 +840,9 @@ def main():
                 )
 
 
-            # ------------------------------------------------
+            #                                                                                  
             # Random delay
-            # ------------------------------------------------
+            #             
 
             delay = random.uniform(
                 3,
@@ -1054,9 +860,9 @@ def main():
             )
 
 
-        # ----------------------------------------------------
+                                
         # CLOSE
-        # ----------------------------------------------------
+                                
 
         browser.close()
 
@@ -1075,9 +881,9 @@ def main():
     print("=" * 90)
 
 
-# ============================================================
+                        
 # RUN
-# ============================================================
+                        
 
 if __name__ == "__main__":
 
