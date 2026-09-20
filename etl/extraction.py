@@ -12,13 +12,13 @@ naukri_link_data = Path("extracted_data/naukri_data/naukri_link_data.csv")
 # previous_data = Path("extracted_data/naukri_data/naukri_link_data.csv")
 
 history_data = Path("extracted_data/naukri_data/naukri_scrap_history.csv")
-
+max_pages = 2
 
 def naukri_job_link_scraper():
 
     print("Starting Naukri extraction...")
 
-    df = naukri_link_scraper()
+    df = naukri_link_scraper(max_pages)
 
     print(f"Extracted rows: {len(df)}")
 

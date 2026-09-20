@@ -14,8 +14,6 @@ naukri_job_link = Path( "scraped_data/naukri.com_data/naukri_jobs_link.csv")
 
 BASE_URL = "https://www.naukri.com/data-analyst-jobs"
 
-# Number of pages to scrape
-MAX_PAGES = 1
 
 
 
@@ -26,7 +24,7 @@ MAX_PAGES = 1
 jobs = []
 
 
-def link_scraper():
+def link_scraper(max_pages):
 
 
     with sync_playwright() as p:
@@ -43,7 +41,7 @@ def link_scraper():
         
         # LOOP THROUGH PAGES
         
-        for page_number in range(1, MAX_PAGES + 1):
+        for page_number in range(1, max_pages + 1):
 
             
             print("=" * 80)
@@ -204,7 +202,7 @@ def link_scraper():
             # WAIT BEFORE NEXT PAGE
             
 
-            if page_number < MAX_PAGES:
+            if page_number < max_pages:
 
                 delay = random.uniform(
                     3,
@@ -227,10 +225,10 @@ def link_scraper():
         browser.close()
 
 
-def naukri_link_scraper():
+def naukri_link_scraper(max_pages):
 
 
-    link_scraper()
+    link_scraper(max_pages)
 
 
     

@@ -1,1 +1,8 @@
 scraper/linkedin/session/state.json
+etl/__pycache__
+etl/__pycache__/extraction.cpython-310.pyc
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+etl/__pycache__/extraction.cpython-310.pyc
