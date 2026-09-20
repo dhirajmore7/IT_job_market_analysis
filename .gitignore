@@ -6,3 +6,4 @@ __pycache__/
 *.pyc
 *.pyo
 etl/__pycache__/extraction.cpython-310.pyc
+demo.py
