@@ -9,7 +9,6 @@ from datetime import date
 
 naukri_link_data = Path("extracted_data/naukri_data/naukri_link_data.csv")
 
-# previous_data = Path("extracted_data/naukri_data/naukri_link_data.csv")
 
 history_data = Path("extracted_data/naukri_data/naukri_scrap_history.csv")
 max_pages = 2
