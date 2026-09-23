@@ -214,7 +214,7 @@ def main():
 
     # created a new column order for new clean data csv
 
-    new_order = ['job_title', 'company', 'raw_location', 'city', 'state', 'country','experience','salary', 'min_salary','max_salary',
+    new_order = ['job_title', 'company', 'raw_location', 'city', 'state', 'country','experience','min_experience','max_experience','salary', 'min_salary','max_salary',
                 'job_description', 'key_skills', 'posted_date','posted', 'rating', 'reviews',
                 'job_url', 'scrape_date']
 
@@ -245,7 +245,10 @@ def main():
 
    
     print(df[['experience',"min_experience", "max_experience"]])
-   
+    print(df.columns)
 
+    # csv not to repeat header
+    header = not clean_data.exists()
+    df.to_csv(clean_data,mode='a',header=header,index=False)
 main()
 
