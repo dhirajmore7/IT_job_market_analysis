@@ -247,6 +247,16 @@ def main():
     print(df[['experience',"min_experience", "max_experience"]])
     print(df.columns)
 
+
+    #before data convert to csv compare it with previous  data
+    previous_data = pd.read_csv(clean_data)
+    
+    previous_url = set(previous_data['job_url'])
+    
+    df = df[~df['job_url'].isin(previous_url)]
+    if df.empty:
+        print('data already clean')
+        
     # csv not to repeat header
     header = not clean_data.exists()
     df.to_csv(clean_data,mode='a',header=header,index=False)
