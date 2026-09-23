@@ -172,7 +172,34 @@ def extract_salary_range(value):
 
 
 
+import re
+import pandas as pd
 
+
+def extract_experience_range(value):
+
+    if pd.isna(value):
+        return pd.NA, pd.NA
+
+    value = str(value).strip().lower()
+
+    if value in ["", "not disclosed", "fresher"]:
+        return pd.NA, pd.NA
+
+    # Find numbers
+    numbers = re.findall(r"\d+(?:\.\d+)?", value)
+
+    if not numbers:
+        return pd.NA, pd.NA
+
+    numbers = [float(n) for n in numbers]
+
+    # One experience value
+    if len(numbers) == 1:
+        return numbers[0], numbers[0]
+
+    # Experience range
+    return numbers[0], numbers[1]
 
 
 
@@ -210,12 +237,14 @@ def main():
                                                                                 )
 
 
-    print(df[['salary',"min_salary","max_salary"]])
+    df[["min_experience", "max_experience"]] = df["experience"].apply(
+                                                                     lambda x: pd.Series(extract_experience_range(x))
+                                                                                )
 
 
 
-
-
+   
+    print(df[['experience',"min_experience", "max_experience"]])
    
 
 main()
