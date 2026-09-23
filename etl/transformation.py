@@ -88,6 +88,92 @@ def get_posted_date(row):
     return pd.NaT
 
 
+import re
+import pandas as pd
+
+
+def clean_salary(value):
+
+    if pd.isna(value):
+        return pd.NA
+
+    value = str(value).lower().strip()
+
+    # Not disclosed / empty
+    if value in ["", "not disclosed", "not specified", "n/a", "na"]:
+        return pd.NA
+
+    # Extract number
+    match = re.search(r"\d+(?:\.\d+)?", value)
+
+    if not match:
+        return pd.NA
+
+    salary = float(match.group())
+
+    # Convert LPA/Lacs to actual annual salary
+    if "lakh" in value or "lac" in value or "lpa" in value:
+        salary = salary * 100000
+
+    # Convert thousand
+    elif "k" in value:
+        salary = salary * 1000
+
+    return salary
+
+
+import re
+import pandas as pd
+
+
+def extract_salary_range(value):
+
+    if pd.isna(value):
+        return pd.NA, pd.NA
+
+    value = str(value).strip().lower()
+
+    # No salary information
+    if value in ["", "not disclosed", "unpaid"]:
+        return pd.NA, pd.NA
+
+    # Remove commas
+    value = value.replace(",", "")
+
+    # Find all numbers
+    numbers = re.findall(r"\d+(?:\.\d+)?", value)
+
+    if not numbers:
+        return pd.NA, pd.NA
+
+    # Convert numbers to float
+    numbers = [float(n) for n in numbers]
+
+    # Convert Lacs / Lakhs to actual rupees
+    if "lac" in value or "lakh" in value:
+        converted = []
+
+        for number in numbers:
+            # Determine whether this particular number is Lacs
+            converted.append(number * 100000)
+
+        numbers = converted
+
+    elif "p.a." in value or "pa" in value:
+        # Salary is already in rupees
+        pass
+
+    # One salary value
+    if len(numbers) == 1:
+        return numbers[0], numbers[0]
+
+    # Salary range
+    return numbers[0], numbers[1]
+
+
+
+
+
 
 
 def main():
@@ -101,7 +187,7 @@ def main():
 
     # created a new column order for new clean data csv
 
-    new_order = ['job_title', 'company', 'raw_location', 'city', 'state', 'country','experience', 'min_salary','max_salary',
+    new_order = ['job_title', 'company', 'raw_location', 'city', 'state', 'country','experience','salary', 'min_salary','max_salary',
                 'job_description', 'key_skills', 'posted_date','posted', 'rating', 'reviews',
                 'job_url', 'scrape_date']
 
@@ -117,8 +203,16 @@ def main():
     # find posted date from posted
     df["posted_date"] = df.apply(get_posted_date, axis=1)
 
+    # find min_salary and max_salary from salary column
 
-    print(df[['posted','posted_date']])
+    df[["min_salary", "max_salary"]] = df["salary"].apply(
+                                                            lambda x: pd.Series(extract_salary_range(x))
+                                                                                )
+
+
+    print(df[['salary',"min_salary","max_salary"]])
+
+
 
 
 
