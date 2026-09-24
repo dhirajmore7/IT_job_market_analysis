@@ -17,7 +17,7 @@ from playwright.sync_api import sync_playwright
 # output_csv = Path("scraped_data/naukri.com_data/naukri_jobs_raw.csv")
 
 
-FIELDS = [
+FIELDS = [ "scrap_job_title",
     "job_title",
     "company",
     "location",
@@ -368,7 +368,9 @@ def get_rating_reviews(page):
 # SCRAPE ONE JOB
                  
 
-def scrape_job(page, job_url):
+def scrape_job(page, job_url,df):
+
+    
 
     data = {field: "" for field in FIELDS }
 
@@ -404,7 +406,14 @@ def scrape_job(page, job_url):
             random.uniform(2, 4)
         )
 
+        # scrap_job_title
 
+        job_row = df[df["job_url"] == job_url]
+
+        if not job_row.empty:
+            data["scrap_job_title"] = job_row.iloc[0]["job_title"]
+        else:
+            data["scrap_job_title"] = ""
                                 
         # JOB TITLE
                                 
@@ -555,7 +564,7 @@ def scrape_job(page, job_url):
 
 
                   
-# SAVE DATA TO CSV
+# SAVE DATA TO CSV 
                    
 
 def save_to_csv(data,output_csv):
@@ -604,9 +613,7 @@ def get_job_urls(input_csv):
         )
 
 
-    df = pd.read_csv(
-        input_csv
-    )
+    df = pd.read_csv( input_csv )
 
 
     print(
@@ -615,44 +622,11 @@ def get_job_urls(input_csv):
     )
 
 
-                                                    
-    # Find URL column
-                                                    
+                                            
 
-    possible_columns = [
-        "job_url",
-        "job_link",
-        "url",
-        "link"
-    ]
+    url_column = "job_url"
 
-
-    url_column = None
-
-
-    for column in possible_columns:
-
-        if column in df.columns:
-
-            url_column = column
-
-            break
-
-
-    if url_column is None:
-
-        raise ValueError(
-            "No job URL column found in CSV."
-        )
-
-
-    print(
-        "URL column:",
-        url_column
-    )
-
-
-                                                    
+                                 
     # Clean URLs
                                                     
 
@@ -723,7 +697,9 @@ def get_scraped_urls(output_csv):
 
 def naukri_scraper_data(input_csv,output_csv):
 
-                                                    
+    df = pd.read_csv(input_csv)                                               
+
+
     # GET URLS
                                                     
 
@@ -810,10 +786,7 @@ def naukri_scraper_data(input_csv,output_csv):
 
             try:
 
-                data = scrape_job(
-                    page,
-                    job_url
-                )
+                data = scrape_job(page, job_url,df)
 
                 
                 # Save immediately

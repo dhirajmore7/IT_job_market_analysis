@@ -12,7 +12,7 @@ import random
 naukri_job_link = Path( "scraped_data/naukri.com_data/naukri_jobs_link.csv")
                                          
 
-BASE_URL = "https://www.naukri.com/data-analyst-jobs"
+# base_url = "https://www.naukri.com/data-analyst-jobs"
 
 
 
@@ -24,7 +24,9 @@ BASE_URL = "https://www.naukri.com/data-analyst-jobs"
 jobs = []
 
 
-def link_scraper(max_pages):
+def link_scraper(max_pages,role,page_number):
+
+    base_url = f"https://www.naukri.com/{role}-jobs"
 
 
     with sync_playwright() as p:
@@ -41,7 +43,7 @@ def link_scraper(max_pages):
         
         # LOOP THROUGH PAGES
         
-        for page_number in range(1, max_pages + 1):
+        while page_number < max_pages :
 
             
             print("=" * 80)
@@ -55,14 +57,14 @@ def link_scraper(max_pages):
 
             if page_number == 1:
 
-                url = BASE_URL
+                search_url = base_url
 
             else:
 
-                url = f"{BASE_URL}-{page_number}"
+                search_url = f"{base_url}-{page_number}"
 
 
-            print("Opening:", url)
+            print("Opening:", search_url)
                             
                     
                 
@@ -75,7 +77,7 @@ def link_scraper(max_pages):
             try:
 
                 page.goto(
-                    url,
+                    search_url,
                     timeout=60000,
                     wait_until="domcontentloaded"
                 )
@@ -124,9 +126,7 @@ def link_scraper(max_pages):
                     f"No jobs found on page {page_number}."
                 )
 
-                print(
-                    "Stopping pagination."
-                )
+                print( "Stopping pagination.")
 
                 break
 
@@ -148,7 +148,7 @@ def link_scraper(max_pages):
                     # GET TITLE
                     
 
-                    title = link.inner_text().strip()
+                    title = role.replace('-'," ").title()
 
 
                     
@@ -164,10 +164,10 @@ def link_scraper(max_pages):
                     # VALIDATE
                     
 
-                    if title and url:
+                    if title and url and search_url:
 
                         jobs.append(
-                            {
+                            {   "search_url":search_url,
                                 "job_title": title,
                                 "job_url": url
                             }
@@ -217,6 +217,8 @@ def link_scraper(max_pages):
                     delay
                 )
 
+            page_number += 1
+
 
         
         # CLOSE BROWSER
@@ -225,10 +227,12 @@ def link_scraper(max_pages):
         browser.close()
 
 
-def naukri_link_scraper(max_pages):
+def naukri_link_scraper(max_pages,role,start_page):
+
+    
 
 
-    link_scraper(max_pages)
+    link_scraper(max_pages,role,start_page)
 
 
     
@@ -241,39 +245,7 @@ def naukri_link_scraper(max_pages):
 
 
 
-    # REMOVE DUPLICATE URLs
-
-
-    # if not df.empty:
-
-    #     df = df.drop_duplicates(
-    #         subset=["job_url"]
-    #     )
-
-
-
-    # # RESET INDEX
-
-
-    # df = df.reset_index(
-    #     drop=True
-    # )
-
-
-
-    # # SAVE CSV
-
-
-    # df.to_csv(
-    #     naukri_job_link,
-    #     index=False,
-    #     encoding="utf-8-sig"
-    # )
-
-
-
-    # FINAL RESULT
-
+    
 
     print("\n")
     print("=" * 80)

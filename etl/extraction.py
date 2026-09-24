@@ -6,19 +6,40 @@ from pathlib import Path
 import pandas as pd
 from datetime import date
 
+job_role = "data-analyst"
 
 naukri_link_data = Path("extracted_data/naukri_data/naukri_link_data.csv")
 
 
 history_data = Path("extracted_data/naukri_data/naukri_scrap_history.csv")
-max_pages = 2
+max_pages = 1
 
 def naukri_job_link_scraper():
 
+
+    global max_pages
+
+    # Create folder if it doesn't exist
+    naukri_link_data.parent.mkdir(parents=True,  exist_ok=True )
+    
+
     print("Starting Naukri extraction...")
 
-    df = naukri_link_scraper(max_pages)
 
+    df = pd.read_csv(naukri_link_data)
+
+    
+    print("start scraping from  ",df['search_url'].iloc[len(df) - 1])
+
+    start_page= df['search_url'].iloc[len(df) - 1]
+
+    start_page = start_page.split('-')
+    start_page =int(start_page[-1]) + 1
+
+
+    max_pages = (max_pages + start_page) 
+
+    df = naukri_link_scraper(max_pages,job_role,start_page=0)
     print(f"Extracted rows: {len(df)}")
 
     if df.empty:
@@ -31,9 +52,7 @@ def naukri_job_link_scraper():
 
     
 
-    # Create folder if it doesn't exist
-    naukri_link_data.parent.mkdir(parents=True,  exist_ok=True )
-
+    
     # Don't repeat CSV header when appending
     header = not naukri_link_data.exists()
 
@@ -48,7 +67,7 @@ def naukri_job_link_scraper():
 
     # data convert to csv
 
-    df.to_csv(naukri_link_data,  mode="a",  header=header,  index=False  )
+    df.to_csv(naukri_link_data,  mode="a" ,headee=header, index=False  )
 
 
     # scrap history 
