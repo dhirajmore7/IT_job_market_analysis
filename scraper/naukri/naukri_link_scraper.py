@@ -10,7 +10,7 @@ import re
 # CONFIGURATION
 
 
-naukri_job_link = Path( "scraped_data/naukri.com_data/naukri_jobs_link.csv")
+naukri_link_data = Path( "extracted_data/naukri_data/naukri_link_data.csv")
                                          
 
 # base_url = "https://www.naukri.com/data-analyst-jobs"
@@ -22,11 +22,40 @@ naukri_job_link = Path( "scraped_data/naukri.com_data/naukri_jobs_link.csv")
 # STORE JOBS
 
 
+
 jobs = []
 
-def extract_job_search_total(role):
+def save_to_csv():
 
-    search_url = f"https://www.naukri.com/{role}-jobs"
+    global jobs
+
+    df = pd.DataFrame(jobs)
+    naukri_link_data.parent.mkdir(parents=True,  exist_ok=True )
+
+    df = df.drop_duplicates()
+
+    # before save to csv data compare to previous data
+    if naukri_link_data.exists():
+        previous_data = pd.read_csv(naukri_link_data)
+
+        previous_data = set(previous_data['job_url'])
+
+        df = df[~df['job_url'].isin(previous_data)]
+
+    # do not repeat header
+    header = not naukri_link_data.exists()
+
+    # conver df to csv
+
+    df.to_csv(naukri_link_data,mode='a',header=header,index=False)
+
+    # empty jobs list after saving
+    jobs = []
+
+
+def extract_job_search_total(role,start_page=0):
+
+    search_url = f"https://www.naukri.com/{role}-jobs-{start_page}"
     
     with sync_playwright() as p:
     
@@ -36,7 +65,7 @@ def extract_job_search_total(role):
             
         page = context.new_page()
     
-        page.goto( search_url, timeout=60000, wait_until="domcontentloaded"   )
+        page.goto( search_url, timeout=70000, wait_until="domcontentloaded"   )
         
         print(page.title())
 
@@ -69,8 +98,10 @@ def extract_job_search_total(role):
             #         'total':total}
             return total
 
-def link_scraper(max_pages,role,page_number):
+def link_scraper(max_pages,role,page_number=0):
 
+    
+    
     base_url = f"https://www.naukri.com/{role}-jobs"
 
 
@@ -87,6 +118,7 @@ def link_scraper(max_pages,role,page_number):
 
         
         # LOOP THROUGH PAGES
+        count_jobs_link = 0
         
         while page_number < max_pages :
 
@@ -224,13 +256,11 @@ def link_scraper(max_pages,role,page_number):
                         page_jobs += 1
 
 
-                        print(
-                            f"{i + 1}. {title}"
-                        )
+                        print( f"{i + 1}. {title}"   )
 
-                        print(
-                            f"   {url}"
-                        )
+                        print( f"   {url}") 
+                           
+                    
 
 
                 except Exception as e:
@@ -266,6 +296,11 @@ def link_scraper(max_pages,role,page_number):
 
             page_number += 1
 
+            count_jobs_link += len(jobs)
+
+
+            save_to_csv()
+
 
         
         # CLOSE BROWSER
@@ -273,36 +308,34 @@ def link_scraper(max_pages,role,page_number):
 
         browser.close()
 
+    return count_jobs_link
 
-def naukri_link_scraper(max_pages,role,start_page=0):
+
+def naukri_link_scraper(max_pages,role,start_page):
 
     # to find last_page for the give job role
     if max_pages.lower() == 'all':
 
-        total_jobs = extract_job_search_total(role)
+        total_jobs = extract_job_search_total(role,start_page)
 
         print('total jobs:',total_jobs)
 
-        pages = total_jobs//20
-        print('pages:',pages)
+        max_pages = (total_jobs//20) + 1
+        print('pages to scrap:',max_pages)
         
         print("scraping all pages:\n",max_pages,"\nfor job role:",role)
     
 
-
+    # if start_page.empty():
+    #     start_page = 0
     
 
 
-    link_scraper(max_pages,role,start_page)
+    link_count=link_scraper(max_pages,role,start_page)
 
 
     
-    # CREATE DATAFRAME
-
-
-    df = pd.DataFrame(
-        jobs
-    )
+    
 
 
 
@@ -315,19 +348,18 @@ def naukri_link_scraper(max_pages,role,start_page=0):
 
 
     print(
-        f"Total unique jobs: {len(df)}"
+        f"Total unique jobs: {link_count}"
     )
 
 
     print(
-        f"Saved to: {naukri_job_link}"
+        f"Saved to: {naukri_link_data}"
     )
 
 
     print("\nFinal data:")
+    print(link_count)
 
-    print(
-        df
-    )
+    
 
-    return df
+    return link_count

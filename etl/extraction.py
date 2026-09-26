@@ -12,66 +12,56 @@ naukri_link_data = Path("extracted_data/naukri_data/naukri_link_data.csv")
 
 
 history_data = Path("extracted_data/naukri_data/naukri_scrap_history.csv")
-max_pages = 1
+
+max_pages = "all"
 
 def naukri_job_link_scraper():
 
 
     global max_pages
 
-    # Create folder if it doesn't exist
-    naukri_link_data.parent.mkdir(parents=True,  exist_ok=True )
+    # # Create folder if it doesn't exist
+    # naukri_link_data.parent.mkdir(parents=True,  exist_ok=True )
     
 
     print("Starting Naukri extraction...")
 
-
     df = pd.read_csv(naukri_link_data)
 
+    print(df.head(5))
     
-    print("start scraping from  ",df['search_url'].iloc[len(df) - 1])
+    if not df.empty:
+        
+        
+        print("start scraping from  ",df['search_url'].iloc[len(df) - 1])
+        
+        last_url= df['search_url'].iloc[len(df) - 1]
+        
+        start_page = last_url.split('-')
+        start_page =int(start_page[-1]) + 1
+        
+        if type(max_pages) == int:
+            max_pages = (max_pages + start_page) 
 
-    start_page= df['search_url'].iloc[len(df) - 1]
+    else:
+        start_page = 0
 
-    start_page = start_page.split('-')
-    start_page =int(start_page[-1]) + 1
+    link_count = naukri_link_scraper(max_pages,job_role,start_page)
 
-
-    max_pages = (max_pages + start_page) 
-
-    df = naukri_link_scraper(max_pages,job_role,start_page=0)
-    print(f"Extracted rows: {len(df)}")
-
-    if df.empty:
-        print("No data extracted.")
-        return
-
-    # Remove duplicate URLs
-
-    df = df.drop_duplicates(subset=["job_url"])
-
-    
+    print(f"Extracted rows: {link_count}")
 
     
-    # Don't repeat CSV header when appending
-    header = not naukri_link_data.exists()
+    
 
-    #before data convert to csv compare it with previous  data
-    previous_data = pd.read_csv(naukri_link_data)
-
-    previous_url = set(previous_data['job_url'])
-
-    df = df[~df['job_url'].isin(previous_url)]
-
-
-
-    # data convert to csv
-
-    df.to_csv(naukri_link_data,  mode="a" ,headee=header, index=False  )
+    
+    
 
 
     # scrap history 
-    df_2 =pd.read_csv(naukri_link_data)
+    
+    if naukri_link_data.exists():
+
+        df_2 =pd.read_csv(naukri_link_data)
     
 
     scraping_history = [{"source":"Naukri.com","scrap_date":"","new_job_links":"","total_scraped_link":""}]
@@ -79,7 +69,7 @@ def naukri_job_link_scraper():
     df_1= pd.DataFrame(scraping_history)
 
     df_1['scrap_date']= date.today()
-    df_1['new_job_links'] = len(df)
+    df_1['new_job_links'] = link_count
     df_1['total_scraped_link']= len(df_2)
 
     # save history data in csv
@@ -94,11 +84,12 @@ def naukri_job_link_scraper():
 
     print(f"Saved {len(df)} rows to {naukri_link_data}")
 
-    naukri_raw_data()
+    # naukri_raw_data()
 
 
 output_csv = Path("extracted_data/naukri_data/naukri_raw_jobs.csv")
 def naukri_raw_data():
+
     naukri_scraper_data(naukri_link_data,output_csv)
     
     
