@@ -3,7 +3,8 @@ from playwright.sync_api import sync_playwright
 from pathlib import Path
 import time
 import random
-
+from playwright.sync_api import Page
+import re
 
 
 # CONFIGURATION
@@ -23,6 +24,50 @@ naukri_job_link = Path( "scraped_data/naukri.com_data/naukri_jobs_link.csv")
 
 jobs = []
 
+def extract_job_search_total(role):
+
+    search_url = f"https://www.naukri.com/{role}-jobs"
+    
+    with sync_playwright() as p:
+    
+        browser = p.chromium.launch(headless=False)
+    
+        context =  browser.new_context(viewport={'width':1280,'height':900})       
+            
+        page = context.new_page()
+    
+        page.goto( search_url, timeout=60000, wait_until="domcontentloaded"   )
+        
+        print(page.title())
+
+        page_title = page.title()
+
+        
+
+        if any(char.isdigit() for char in page_title):
+            print(page_title)
+            total_jobs = int(re.findall(r"\d+",page_title)[0])
+            return total_jobs
+
+        else:
+        
+            wrapper = page.locator('div[class*="h1-wrapper"]').first
+            wrapper.wait_for(state="visible", timeout=10000)
+
+            count_string = wrapper.locator('span[class*="count-string"]').first.inner_text().strip()
+            title = wrapper.locator('h1[class*="h1-content"]').first.inner_text().strip()
+
+            start = end = total = None
+            m = re.match(r"(\d+)\s*-\s*(\d+)\s*of\s*(\d+)", count_string)
+            if m:
+                start, end, total = (int(g) for g in m.groups())
+
+            # return {'message':'total jobs not found by page.title()',
+            #         'count_string':count_string,
+            #         'start':start,
+            #         'end':end,
+            #         'total':total}
+            return total
 
 def link_scraper(max_pages,role,page_number):
 
@@ -81,6 +126,8 @@ def link_scraper(max_pages,role,page_number):
                     timeout=60000,
                     wait_until="domcontentloaded"
                 )
+               
+                
 
             except Exception as e:
 
@@ -227,7 +274,21 @@ def link_scraper(max_pages,role,page_number):
         browser.close()
 
 
-def naukri_link_scraper(max_pages,role,start_page):
+def naukri_link_scraper(max_pages,role,start_page=0):
+
+    # to find last_page for the give job role
+    if max_pages.lower() == 'all':
+
+        total_jobs = extract_job_search_total(role)
+
+        print('total jobs:',total_jobs)
+
+        pages = total_jobs//20
+        print('pages:',pages)
+        
+        print("scraping all pages:\n",max_pages,"\nfor job role:",role)
+    
+
 
     
 
