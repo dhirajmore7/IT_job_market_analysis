@@ -32,3 +32,21 @@ def comapany_table(df):
 
 company = comapany_table(df)
 print(company.head())
+
+# location table
+def location_table(df):
+
+    location = df[["city","state","country"]].drop_duplicates().copy()
+
+    location = location.dropna()
+
+    # add location id column in loacation data
+    location.insert(0, "location_id", range(1, len(location) + 1))
+
+    
+
+    return location
+
+location = location_table(df)
+
+print(location.head())
