@@ -125,7 +125,7 @@ jobs = jobs_table(df,company,location)
 print(jobs.head())
 
 
-
+# job_skills table bridge
 
 def job_skills_bridge(df,jobs,skills):
     
@@ -161,3 +161,31 @@ def job_skills_bridge(df,jobs,skills):
 job_skills = job_skills_bridge(df,jobs,skills)
 
 print(job_skills.head())
+
+# company_rating_history table
+
+def company_rating_history(df,company):
+    rating_history = df[ ["company", "rating", "reviews","posted_date"]].drop_duplicates().copy()
+
+    rating_history = rating_history.merge(
+        company,
+        on="company",
+        how="inner",
+        # validate="one_to_many"
+    )
+
+    rating_history.rename(columns={'posted_date':"collected_at"},inplace=True)
+
+    rating_history = rating_history[
+        ["company_id", "rating", "reviews","collected_at"]
+    ]
+
+    rating_history["source"] = "Naukri"
+    # rating_history["collected_at"] = df['posted_date']
+
+    print("Company rating history")
+    print(rating_history.head())
+
+
+
+company_rating_history = company_rating_history(df,company)
