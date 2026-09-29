@@ -79,3 +79,48 @@ def skills_table(df):
 skills= skills_table(df)
 
 print(skills.head())
+
+# jobs table
+def jobs_table(df,company,location):
+    jobs = df[
+        [
+            "company",
+            "city",
+            "state",
+            "country",
+            "job_title",
+            "experience",
+            "salary",
+            "job_description",
+            "job_url"
+        ]
+    ].copy()
+
+    # Add company ID
+    jobs = jobs.merge(company, on="company", how="left")
+
+    # Add location ID
+    jobs = jobs.merge(location, on=['city','state','country'], how="left")
+
+    jobs = jobs[
+        [
+            "company_id",
+            "location_id",
+            "job_title",
+            "experience",
+            "salary",
+            "job_description",
+            "job_url"
+        ]
+    ]
+
+    jobs = jobs.drop_duplicates(subset=["job_url"])
+
+    
+
+    return jobs
+
+jobs = jobs_table(df,company,location)
+
+print(jobs.head())
+
