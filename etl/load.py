@@ -124,3 +124,40 @@ jobs = jobs_table(df,company,location)
 
 print(jobs.head())
 
+
+
+
+def job_skills_bridge(df,jobs,skills):
+    
+    jobs.index=range(1,1+len(jobs))
+
+    job_skills = df[["job_url", "key_skills"]].copy()
+
+
+    # Separate each skill
+
+    job_skills["key_skills"] = job_skills["key_skills"].str.split(",")
+
+    job_skills = job_skills.explode("key_skills")
+
+    job_skills["key_skills"] = job_skills["key_skills"].str.strip()
+
+    # Add job ID using job URL
+    job_skills = job_skills.merge( jobs[["job_url"]].reset_index().rename(columns={"index": "job_id"}),  on="job_url", how="left")
+
+    print(job_skills)
+
+    # Add skill ID
+    job_skills = job_skills.merge( skills, left_on="key_skills", right_on="skill_name", how="left")
+
+    job_skills = job_skills[["job_id", "skill_id"]]
+
+    job_skills = job_skills.dropna()
+    job_skills = job_skills.drop_duplicates()
+
+    return  job_skills
+
+
+job_skills = job_skills_bridge(df,jobs,skills)
+
+print(job_skills.head())
