@@ -6,7 +6,7 @@ from etl.config import db_name,db_password,db_port
 
 
 # Database connection
-conn = create_engine(f"mysql+pymysql://root:{db_password}@localhost:{db_port}/{db_name}")
+engine = create_engine(f"mysql+pymysql://root:{db_password}@localhost:{db_port}/{db_name}")
 
 # Read cleaned data
 file_path = Path("processed_data/naukri/naukri_clean_data.csv")
@@ -30,8 +30,7 @@ def comapany_table(df):
     
     return company
 
-company = comapany_table(df)
-print(company.head())
+
 
 # location table
 def location_table(df):
@@ -76,9 +75,7 @@ def skills_table(df):
     
     return skills
 
-skills= skills_table(df)
 
-print(skills.head())
 
 # jobs table
 def jobs_table(df,company,location):
@@ -120,9 +117,6 @@ def jobs_table(df,company,location):
 
     return jobs
 
-jobs = jobs_table(df,company,location)
-
-print(jobs.head())
 
 
 # job_skills table bridge
@@ -158,9 +152,7 @@ def job_skills_bridge(df,jobs,skills):
     return  job_skills
 
 
-job_skills = job_skills_bridge(df,jobs,skills)
 
-print(job_skills.head())
 
 # company_rating_history table
 
@@ -170,8 +162,7 @@ def company_rating_history(df,company):
     rating_history = rating_history.merge(
         company,
         on="company",
-        how="inner",
-        # validate="one_to_many"
+        how="inner"
     )
 
     rating_history.rename(columns={'posted_date':"collected_at"},inplace=True)
@@ -181,11 +172,51 @@ def company_rating_history(df,company):
     ]
 
     rating_history["source"] = "Naukri"
-    # rating_history["collected_at"] = df['posted_date']
+    
 
     print("Company rating history")
     print(rating_history.head())
 
+    return rating_history
 
 
-company_rating_history = company_rating_history(df,company)
+
+
+
+
+def load_main():
+
+    company=comapany_table(df)
+    location = location_table(df)
+    jobs = jobs_table(df,company,location)
+    skills = skills_table(df)
+    job_skill = job_skills_bridge(df,jobs,skills)
+    rating_history = company_rating_history(df,company)
+
+
+    tables={'company':company,
+            'location':location,
+            'jobs':jobs,
+            'job_skill':job_skill,
+            'company_rating_history':rating_history}
+
+    
+    try:
+
+        with engine.begin() as conn:
+
+            for table_name , table in tables.items():
+                print('='*50)
+                print(table_name,"Table loading to database\n")
+
+                table.to_sql(table_name,con=conn,if_exists='append',index=False)
+
+                print(table_name,": data sucessfully inserted in database ")
+                print('='*50)
+
+        print('all table  load sucessfuly. Transaction complete')
+
+    except Exception as e:
+        print('etl loading failed:',e)
+
+load_main()
