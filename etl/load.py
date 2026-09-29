@@ -50,3 +50,32 @@ def location_table(df):
 location = location_table(df)
 
 print(location.head())
+
+# skills_table
+
+def skills_table(df):
+        
+    skills = df[["key_skills"]].dropna().copy()
+
+    # separate every skill in key skill column
+
+    skills["key_skills"] = skills["key_skills"].str.split(",")
+
+    skills = skills.explode("key_skills")
+
+    skills["key_skills"] = skills["key_skills"].str.strip()
+
+    skills = skills.drop_duplicates()
+    skills = skills.dropna()
+    skills = skills.reset_index(drop=True)
+
+    skills.insert(0, "skill_id", range(1, len(skills) + 1))
+
+    skills = skills.rename(columns={"key_skills": "skill_name"})
+
+    
+    return skills
+
+skills= skills_table(df)
+
+print(skills.head())
