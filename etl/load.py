@@ -1,14 +1,13 @@
 import pandas as pd
-from sqlalchemy import create_engine
+
 from pathlib import Path
+import hashlib
+from etl.config import engine
 
-from etl.config import db_name,db_password,db_port
 
-
-# Database connection
-engine = create_engine(f"mysql+pymysql://root:{db_password}@localhost:{db_port}/{db_name}")
 
 # Read cleaned data
+
 file_path = Path("processed_data/naukri/naukri_clean_data.csv")
 df = pd.read_csv(file_path)
 
@@ -22,7 +21,7 @@ def comapany_table(df):
     company = df[["company"]].drop_duplicates().copy()
 
     company = company.reset_index(drop=True)
-    company.insert(0, "company_id", range(101, 101 + len(company)))
+    # company.insert(0, "company_id", range(101, 101 + len(company)))
 
     
 
@@ -40,15 +39,13 @@ def location_table(df):
     location = location.dropna()
 
     # add location id column in loacation data
-    location.insert(0, "location_id", range(1, len(location) + 1))
+    # location.insert(0, "location_id", range(1, len(location) + 1))
 
     
 
     return location
 
-location = location_table(df)
 
-print(location.head())
 
 # skills_table
 
@@ -68,13 +65,24 @@ def skills_table(df):
     skills = skills.dropna()
     skills = skills.reset_index(drop=True)
 
-    skills.insert(0, "skill_id", range(1, len(skills) + 1))
+    # skills.insert(0, "skill_id", range(1, len(skills) + 1))
 
     skills = skills.rename(columns={"key_skills": "skill_name"})
 
     
     return skills
 
+# generate hash
+def generate_url_hash(url):
+
+    if pd.isna(url):
+        return None
+
+    url = str(url).strip()
+
+    return hashlib.sha256(
+        url.encode("utf-8")
+    ).hexdigest()
 
 
 # jobs table
@@ -93,15 +101,17 @@ def jobs_table(df,company,location):
         ]
     ].copy()
 
+    # add sha in table for job url
+    df['job_url_hash'] = df['job_url'].apply(generate_url_hash)
+
     # Add company ID
     jobs = jobs.merge(company, on="company", how="left")
 
     # Add location ID
     jobs = jobs.merge(location, on=['city','state','country'], how="left")
-
+    
     jobs = jobs[
         [
-            "company_id",
             "location_id",
             "job_title",
             "experience",
