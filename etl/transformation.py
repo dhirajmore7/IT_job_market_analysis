@@ -4,11 +4,11 @@ from pathlib import Path
 import string
 from etl.config import skills
 
-raw_data = Path("extracted_data/naukri_data/naukri_raw_jobs.csv")
+raw_data = Path("data/extracted_data/naukri_data/naukri_raw_jobs.csv")
 
-clean_data = Path("processed_data/naukri/naukri_clean_data.csv")
+clean_data = Path("data/processed_data/naukri/naukri_clean_data.csv")
 
-city_state_csv = Path("extracted_data/naukri_data/india_city_state_mapping.csv")
+city_state_csv = Path("data/extracted_data/naukri_data/india_city_state_mapping.csv")
 
 
 
