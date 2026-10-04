@@ -1,3 +1,35 @@
+import os
+from dotenv import load_dotenv
+load_dotenv()
+
+from sqlalchemy import create_engine
+
+from pathlib import Path
+
+
+db_host = os.getenv("db_host")
+db_port = int(os.getenv("db_port"))
+db_name = os.getenv("db_name")
+db_password = os.getenv("db_password")
+
+engine = create_engine(f"mysql+pymysql://root:{db_password}@{db_host}:{db_port}/{db_name}")
+
+
+
+# job roles
+
+job_role = "data-analyst"
+
+# FILE paths
+naukri_link_data = Path("data/extracted_data/naukri_data/naukri_link_data.csv")
+
+history_data = Path("data/extracted_data/naukri_data/naukri_scrap_history.csv")
+
+clean_data_path = Path("data/processed_data/naukri/naukri_clean_data.csv")
+
+
+
+
 skills = [
     # Programming
     "Python",
