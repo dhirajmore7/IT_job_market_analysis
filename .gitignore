@@ -11,4 +11,3 @@ extracted_data\naukri_data\naukri_link_data.csv
 extracted_data\naukri_data\naukri_raw_jobs.csv
 processed_data\naukri\naukri_clean_data.csv
 
-etl\config.py
