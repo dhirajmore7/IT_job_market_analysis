@@ -26,7 +26,7 @@ def company_table(df):
         new_company = company[~company['company'].isin(previous_company['company'])]
             
     
-    # new_company.to_sql("companies",if_exists="append",con=conn,index=False)
+    
     
     new_company = new_company.dropna()
     
@@ -145,7 +145,7 @@ def job_skill_bridge(df):
     
     skills = skills[["job_url","skill_name"]].drop_duplicates()
 
-    print(skills)
+    
 
      # extract job_id from database table jobs
     jobs_id = pd.read_sql(text('select job_url,job_id from  jobs'),con=engine)
@@ -214,15 +214,15 @@ def company_rating_history_table(df):
 def load(df):
 
     company = company_table(df)
-    print('company data done')
+    
     location = location_table(df)
-    print('location data done')
+    
     jobs = jobs_table(df)
-    print('jobs data done')
+    
     skills = skills_table(df)
-    print('skill data done')
+    
     job_skills = job_skill_bridge(df)
-    print('joba_skills data done')
+    
     company_rating_history = company_rating_history_table(df)
 
     print(jobs.dtypes)
@@ -264,84 +264,4 @@ load(df)
 
 
 
-
-
-
-
-
-# with engine.begin() as conn:
-#     try:
-# #         df["company"] = df["company"].str.strip().str.title()
-
-# #         company = df['company'].drop_duplicates()
-# #         new_company = company.dropna()
-# #         print('yes 1')
-# #         previous_company = pd.read_sql(text("select company from companies"),con=conn)
-# #         if not previous_company.empty:
-# #             print(previous_company)
-# #             new_company = company[~company['company'].isin(previous_company['company'])]
-            
-# #         print('yes')
-# #         new_company.to_sql("companies",if_exists="append",con=conn,index=False)
-# #         print('no')
-# #         print(len(new_company),": company data save sucessfully in data base")
-
-# #   #  LOCATIONS
-# #         locations = df[['city','state','country']]
-
-# #         locations = locations.drop_duplicates().dropna()
-
-# #         pr_locations = pd.read_sql(text("select city,state,country from locations"),con=conn)
-
-# #         new_locations = locations.merge(pr_locations[['city','state','country']],on=['city','state','country'],how='left',indicator=True)
-
-# #         new_locations = new_locations[new_locations['_merge']=='left_only'].drop(columns="_merge")
-
-# #         new_locations.to_sql("locations",if_exists="append",index=False,con=conn)
-
-# #         print(len(new_locations),":locations data save sucessfully in database")
-
-# # JOBS  
-#         location = pd.read_sql(text("select * from locations"),con=conn)
-#         df = df.merge(location,on=['city','state','country'],how="left")
-#         company = pd.read_sql(text("select * from companies"),con=conn)
-#         df = df.merge(company,on='company',how='left')
-
-#         print(df)
-#         print(df.columns())
-
-#         jobs = df[[
-#             "job_title",
-#             "company_id",
-#             "location_id",
-#             "min_experience",
-#             "max_experience",
-#             "min_salary",
-#             "max_salary",
-#             "job_description",
-#             "posted_date",
-#             "job_url",
-
-#         ]]
-
-       
-#         jobs["job_url_hash"] = jobs["job_url"].apply( lambda x: hashlib.sha256(x.encode("utf-8")).hexdigest() if pd.notna(x)  else None)
-
-#         # company = pd.read_sql(text("select * from companies"),con=conn)
-
-#         # jobs = jobs.merge(company,on=['city','state','country'],how="left")
-
-#         pr_jobs_data = pd.read_sql(text("select job_url from jobs"),con=conn)
-
-#         if not pr_jobs_data.empty :
-#             jobs = jobs[~jobs["jobs_url"].isin(pr_jobs_data["jobs_url"])]
-
-#         jobs.to_sql("jobs",if_exists="append",con=conn,index=False)
-
-        
-
-
-        
-#     except Exception as e:
-#         print("database error",e)
 

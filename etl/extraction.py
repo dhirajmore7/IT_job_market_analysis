@@ -5,13 +5,8 @@ from scraper.naukri.naukri_scraper_data import naukri_scraper_data
 from pathlib import Path
 import pandas as pd
 from datetime import date
+from etl.config import naukri_link_data,history_data,job_role
 
-job_role = "data-analyst"
-
-naukri_link_data = Path("extracted_data/naukri_data/naukri_link_data.csv")
-
-
-history_data = Path("extracted_data/naukri_data/naukri_scrap_history.csv")
 
 max_pages = "all"
 
@@ -20,8 +15,8 @@ def naukri_job_link_scraper():
 
     global max_pages
 
-    # # Create folder if it doesn't exist
-    # naukri_link_data.parent.mkdir(parents=True,  exist_ok=True )
+    # Create folder if it doesn't exist
+    naukri_link_data.parent.mkdir(parents=True,  exist_ok=True )
     
 
     print("Starting Naukri extraction...")
@@ -29,7 +24,9 @@ def naukri_job_link_scraper():
     df = pd.read_csv(naukri_link_data)
 
     print(df.head(5))
-    
+
+
+    # start scraping of link from  where last link was extracted
     if not df.empty:
         
         
@@ -84,10 +81,10 @@ def naukri_job_link_scraper():
 
     print(f"Saved {len(df)} rows to {naukri_link_data}")
 
-    # naukri_raw_data()
+    naukri_raw_data()
 
 
-output_csv = Path("extracted_data/naukri_data/naukri_raw_jobs.csv")
+output_csv = Path("data/extracted_data/naukri_data/naukri_raw_jobs.csv")
 def naukri_raw_data():
 
     naukri_scraper_data(naukri_link_data,output_csv)
@@ -96,4 +93,5 @@ def naukri_raw_data():
 
 if __name__ == "__main__":
     naukri_job_link_scraper()
-
+    
+    
