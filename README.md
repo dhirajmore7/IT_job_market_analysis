@@ -66,7 +66,7 @@ This project solves this problem by building an ETL pipeline that:
           Power BI Dashboard
 
 
----
+
 ## ETL Implementation
 
 ### 1. Extract
