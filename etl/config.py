@@ -1,4 +1,7 @@
+<<<<<<< HEAD
 
+=======
+>>>>>>> cc3982bfc7404290db452b3c29a6a7a63fed8588
 import os
 from dotenv import load_dotenv
 load_dotenv()
@@ -31,7 +34,10 @@ clean_data_path = Path("data/processed_data/naukri/naukri_clean_data.csv")
 
 
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> cc3982bfc7404290db452b3c29a6a7a63fed8588
 skills = [
     # Programming
     "Python",
