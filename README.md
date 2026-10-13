@@ -1,11 +1,8 @@
 # IT Job Market Analysis
 
-Making a ETL pipeline to scrap data from linkedin,naukri.com using python PlayWright and collect data about IT jobs. clean that data using python pandas to analyze and create power bi dashboard.
-
-
 An end-to-end **ETL (Extract, Transform, Load) pipeline** for collecting, cleaning, transforming, and storing IT job-market data.
 
-The project extracts job listings from online job portals, processes the raw data using Python and Pandas, and loads the structured data into a relational MySQL database for further analysis and visualization.
+The project extracts job listings from online job portals such as **LinkedIn and Naukri**, processes the raw data using **Python and Pandas**, and loads the structured data into a relational **MySQL database** for further analysis and visualization using **Power BI**.
 
 ---
 
@@ -26,133 +23,64 @@ This project solves this problem by building an ETL pipeline that:
 
 ---
 
-## 🔄 ETL Pipeline
+## 🛠️ Tools & Technologies
 
-```text
-             Job Portals
-                  │
-                  ▼
-          ┌───────────────┐
-          │   Extraction  │
-          │ Python/Scraper│
-          └───────┬───────┘
-                  │
-                  ▼
-            Raw CSV Data
-                  │
-                  ▼
-          ┌───────────────┐
-          │ Transformation│
-          │ Python/Pandas │
-          └───────┬───────┘
-                  │
-                  ▼
-         Processed / Clean Data
-                  │
-                  ▼
-          ┌───────────────┐
-          │     Loading   │
-          │ SQLAlchemy +  │
-          │     MySQL     │
-          └───────┬───────┘
-                  │
-                  ▼
-           MySQL Database
-                  │
-                  ▼
-           SQL Analysis
-                  │
-                  ▼
-          Power BI Dashboard
-
-
-**Database Schema
-
-
-
-<img width="1217" height="810" alt="Screenshot 2026-10-06 114647" src="https://github.com/user-attachments/assets/4b382359-e38c-4578-b19c-aac0d1e90012" />
-
-
-# IT Job Market Analysis | End-to-End ETL Pipeline
-
-An end-to-end data engineering and analytics project that extracts IT job listings, cleans and transforms raw data using Python and Pandas, and loads structured information into a MySQL relational database for further analysis and visualization.
-
-## Project Overview
-
-The IT job market generates large amounts of data about job opportunities, technical skills, salaries, experience requirements, companies, and hiring locations.
-
-However, this information is often unstructured, inconsistent, and spread across different job listings.
-
-This project focuses on developing an **ETL (Extract, Transform, Load) pipeline** to convert raw job listings into clean, organized, and analysis-ready datasets.
-
-The processed data can be used to explore hiring trends, in-demand technical skills, job distribution across locations, and experience requirements.
-
-## Project Objectives
-
-- Extract IT job listings from online job portals.
-- Automate the collection and processing of job data.
-- Clean inconsistent and missing values.
-- Standardize job titles, locations, skills, salaries, and experience.
-- Identify and remove duplicate records.
-- Design a relational database to organize the data.
-- Load transformed data into MySQL.
-- Prepare datasets for SQL analysis and Power BI visualization.
-
-## Technologies Used
-
-| Category | Technologies |
+| Category | Technology |
 |---|---|
 | Programming | Python |
 | Data Processing | Pandas, NumPy |
-| Web Scraping | Playwright
+| Web Scraping | Playwright |
 | Database | MySQL |
-| Database Connectivity | SQLAlchemy, PyMySQL |
-| Data Analysis | SQL |
-| Visualization | Power BI (planned) |
+| ETL | Python, SQLAlchemy |
+| Visualization | Power BI |
 | Version Control | Git, GitHub |
-| Development | VS Code, Jupyter Notebook |
 
-## ETL Pipeline Architecture
+---
+
+## 🔄 ETL Pipeline
 
 ```text
-         IT Job Portals
-                |
-                v
-       DATA EXTRACTION
-       Python Web Scrapers
-                |
-                v
-         Raw CSV Files
-                |
-                v
-      DATA TRANSFORMATION
-         Python + Pandas
-                |
-       +--------+--------+
-       |                 |
-   Data Cleaning    Standardization
-       |                 |
-       +--------+--------+
-                |
-                v
-       Processed Dataset
-                |
-                v
-          DATA LOADING
-       SQLAlchemy + MySQL
-                |
-                v
-       Relational Database
-                |
-                v
-           SQL Analysis
-                |
-                v
-       Power BI Dashboard
-             (Planned)
+                 Job Portals
+                      │
+                      ▼
+              ┌───────────────┐
+              │   Extraction  │
+              │ Python/       │
+              │ Playwright    │
+              └───────┬───────┘
+                      │
+                      ▼
+                 Raw CSV Data
+                      │
+                      ▼
+              ┌───────────────┐
+              │ Transformation│
+              │ Python/Pandas │
+              └───────┬───────┘
+                      │
+                      ▼
+             Processed / Clean Data
+                      │
+                      ▼
+              ┌───────────────┐
+              │     Loading   │
+              │ SQLAlchemy +  │
+              │     MySQL     │
+              └───────┬───────┘
+                      │
+                      ▼
+                MySQL Database
+                      │
+                      ▼
+                 SQL Analysis
+                      │
+                      ▼
+               Power BI Dashboard
 ```
 
-## ETL Implementation
+---
+
+## ⚙️ ETL Implementation
 
 ### 1. Extract
 
@@ -173,48 +101,52 @@ Collected attributes include:
 - Job posting date
 - Job URL
 
-The extraction process uses Python-based web scraping techniques.
+The extraction process uses **Python and Playwright** for web scraping.
+
+---
 
 ### 2. Transform
 
-The transformation stage converts raw job data into a consistent and structured format using Pandas.
+The transformation stage converts raw job data into a consistent and structured format using **Pandas**.
 
-**Data Cleaning**
+#### Data Cleaning
 
 - Handle missing and null values.
 - Remove duplicate records.
 - Remove unnecessary whitespace and formatting.
 - Standardize inconsistent text values.
 
-**Location Standardization**
+#### Location Standardization
 
 - Clean location strings.
 - Identify cities and states.
 - Map city names to corresponding Indian states.
 - Organize location information for relational storage.
 
-**Salary and Experience Processing**
+#### Salary and Experience Processing
 
 - Extract relevant salary information.
 - Separate minimum and maximum salary values where possible.
 - Process experience ranges.
 - Handle unavailable or undisclosed information.
 
-**Skills Processing**
+#### Skills Processing
 
 - Clean skill-related text.
 - Separate multiple skills.
 - Standardize skill values.
 - Prepare skill mappings for relational tables.
 
-**Date Processing**
+#### Date Processing
 
 - Convert relative posting dates into standardized date values.
-- Handle values such as "Today", "1 day ago", and "1 week ago".
+- Handle values such as `Today`, `1 day ago`, and `1 week ago`.
+
+---
 
 ### 3. Load
 
-The loading stage transfers processed data into MySQL using Python and SQLAlchemy.
+The loading stage transfers processed data into **MySQL** using **Python and SQLAlchemy**.
 
 The database is organized into related tables to reduce redundancy and improve data consistency.
 
@@ -227,7 +159,9 @@ Key considerations include:
 - Transaction management
 - Error handling
 
-## Database Design
+---
+
+## 🗄️ Database Design
 
 The project uses the following main entities:
 
@@ -240,17 +174,15 @@ The project uses the following main entities:
 | `job_skills` | Maps jobs to their required skills |
 | `company_rating_history` | Stores historical company rating information |
 
-The `job_skills` table represents a many-to-many relationship between jobs and skills.
+The `job_skills` table represents a **many-to-many relationship** between jobs and skills.
 
-The company rating history table supports tracking rating information across collection periods.
+The `company_rating_history` table supports tracking company rating information across different collection periods.
 
-*Note: Refer to the SQL schema in the repository for the exact table definitions and constraints.*
+> **Note:** Refer to the SQL schema in the repository for the exact table definitions and constraints.
 
+---
 
-
-The folder structure above summarizes the main components. Refer to the repository for the latest files and script names.
-
-## Data Quality and Validation
+## 📊 Data Quality and Validation
 
 Data quality is an important part of the ETL process.
 
@@ -266,7 +198,9 @@ The pipeline focuses on:
 
 These steps help make the dataset more reliable for downstream analysis.
 
-## Planned Data Analysis
+---
+
+## 📈 Planned Data Analysis
 
 The structured database can support questions such as:
 
@@ -278,7 +212,57 @@ The structured database can support questions such as:
 - Which job titles are most frequently advertised?
 - How do hiring trends change over time?
 
-## Future Improvements
+---
+
+## 📊 Power BI Dashboard
+
+The processed data stored in MySQL can be connected to **Power BI** to create interactive dashboards for IT job-market analysis.
+
+Planned dashboard insights include:
+
+- Job opportunities by city
+- Most in-demand technical skills
+- Jobs by company
+- Jobs by experience level
+- Salary analysis
+- Job-role distribution
+- Hiring trends
+
+---
+
+## 📁 Project Structure
+
+```text
+IT_job_market_analysis/
+│
+├── scraper/
+│   ├── naukri_link_scraper.py
+│   └── naukri_scraper.py
+│
+├── etl/
+│   ├── extraction.py
+│   ├── transformation.py
+│   ├── load.py
+│   └── config.py
+│
+├── extracted_data/
+│
+├── transformed_data/
+│
+├── database/
+│
+├── dashboard/
+│
+├── README.md
+│
+└── requirements.txt
+```
+
+> The folder structure above summarizes the main components. Refer to the repository for the latest files and script names.
+
+---
+
+## 🚀 Future Improvements
 
 - [x] Build job data extraction workflow.
 - [x] Implement data cleaning and transformation.
@@ -291,7 +275,9 @@ The structured database can support questions such as:
 - [ ] Improve incremental loading and historical tracking.
 - [ ] Deploy the pipeline using cloud services.
 
-## Key Learning Outcomes
+---
+
+## 🎯 Key Learning Outcomes
 
 Through this project, I gained practical experience in:
 
@@ -302,9 +288,12 @@ Through this project, I gained practical experience in:
 - Connecting Python applications to MySQL.
 - Working with SQLAlchemy for database operations.
 - Preparing structured datasets for business intelligence.
+- Using Power BI for data visualization.
 - Managing a data project using Git and GitHub.
 
-## Author
+---
+
+## 👨‍💻 Author
 
 **Dhiraj More**
 
@@ -317,4 +306,3 @@ Computer Engineering Graduate | Python | SQL | Data Analytics | ETL
 ---
 
 *This project is developed for practical learning and portfolio demonstration. Job-market data reflects collected listings and should not be interpreted as a complete representation of the employment market.*
-
