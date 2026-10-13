@@ -1,7 +1,3 @@
-<<<<<<< HEAD
-
-=======
->>>>>>> cc3982bfc7404290db452b3c29a6a7a63fed8588
 import os
 from dotenv import load_dotenv
 load_dotenv()
